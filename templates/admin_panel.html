@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Админ панель</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Определение цветовых переменных */
+        :root {
+            --patina-green: #4caf50;
+            --gilded-gold: #D4AF37;
+            --aged-charcoal: #333333;
+            --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+            --light-beige: #F2E9E4;
+            --terracotta: #9C6644;
+            --ochre: #D9A679;
+            --slate-blue: #7D8CA3;
+        }
+
+        /* Глобальные стили */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--light-beige);
+            color: var(--aged-charcoal);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            color: var(--terracotta);
+        }
+
+        /* Навигация */
+        .main-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--terracotta);
+            letter-spacing: 1px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--aged-charcoal);
+            font-weight: 500;
+            position: relative;
+            padding-bottom: 5px;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--terracotta);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--terracotta);
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        /* Анимации */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(62, 58, 53, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 95%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+            animation: fadeInUp 0.5s var(--transition-smooth);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--aged-charcoal);
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            color: var(--terracotta);
+            transform: rotate(90deg);
+        }
+        
+        /* Формы */
+        .admin-panel {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .admin-section {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.05),
+                0 2px 5px rgba(0, 0, 0, 0.03);
+            transform: translateY(0);
+            transition: transform 0.4s var(--transition-smooth);
+            animation: fadeInUp 0.6s var(--transition-smooth) forwards;
+            opacity: 0;
+        }
+        
+        .admin-section:nth-child(1) { animation-delay: 0.1s; }
+        .admin-section:nth-child(2) { animation-delay: 0.2s; }
+        
+        .admin-section h2 {
+            color: var(--patina-green);
+            border-bottom: 2px solid var(--gilded-gold);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--aged-charcoal);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid rgba(62, 58, 53, 0.15);
+            border-radius: 8px;
+            background: rgba(215, 201, 170, 0.05);
+            transition: all 0.3s var(--transition-smooth);
+            font-family: 'Lato', sans-serif;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--gilded-gold);
+            box-shadow: 0 0 0 3px rgba(198, 168, 106, 0.2);
+            outline: none;
+            background: white;
+        }
+        
+        .submit-btn {
+            background: var(--patina-green);
+            color: white;
+            border: none;
+            padding: 11px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.4s var(--transition-smooth);
+            font-weight: 500;
+            box-shadow: 0 3px 5px rgba(90, 125, 107, 0.2);
+            font-size: 0.95rem;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .submit-btn:hover {
+            background: #4c6b5a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(90, 125, 107, 0.3);
+        }
+        
+        /* Предложенные памятники */
+        .proposal-card {
+            background: rgba(215, 201, 170, 0.1);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid rgba(62, 58, 53, 0.05);
+            transition: all 0.4s var(--transition-smooth);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .proposal-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-color: rgba(198, 168, 106, 0.3);
+        }
+        
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .actions button {
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s var(--transition-smooth);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: white;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .view-btn {
+            background: var(--slate-blue);
+        }
+        
+        .approve-btn {
+            background: var(--patina-green);
+        }
+        
+        .reject-btn {
+            background: var(--terracotta);
+        }
+        
+        .delete-btn {
+            background: #d9534f;
+        }
+        
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .image-preview img {
+            width: 70px;
+            height: 70px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            min-width: 220px;
+            margin-bottom: 0;
+        }
+        
+        .counter-badge {
+            display: inline-block;
+            background: var(--terracotta);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            text-align: center;
+            line-height: 22px;
+            font-size: 13px;
+            margin-left: 5px;
+        }
+        
+        .monuments-list {
+            margin-top: 18px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        
+        .monument-item {
+            background: rgba(215, 201, 170, 0.1);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(62, 58, 53, 0.1);
+        }
+        
+        .monument-item h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: var(--patina-green);
+            font-size: 1.1rem;
+        }
+        
+        .monument-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .monument-actions {
+            margin-top: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Адаптивные исправления */
+        .admin-subsection {
+            flex: 1;
+            min-width: 280px;
+            margin-bottom: 18px;
+            padding: 18px;
+            background: rgba(242, 233, 228, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(156, 102, 68, 0.1);
+        }
+        
+        .admin-subsection h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--terracotta);
+            font-size: 1.3rem;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--ochre);
+        }
+        
+        /* Улучшения для компактного отображения */
+        .compact-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .compact-form .form-group {
+            margin-bottom: 0;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        /* Медиазапросы для мобильных */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0.8rem;
+            }
+            
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .admin-panel {
+                padding: 0 15px;
+            }
+            
+            .admin-section {
+                padding: 20px;
+            }
+            
+            .admin-subsection {
+                width: 100%;
+                min-width: 100%;
+                padding: 15px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .form-row .form-group {
+                min-width: 100%;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .submit-btn {
+                width: 100%;
+                padding: 12px;
+            }
+            
+            .actions button {
+                min-width: 80px;
+                font-size: 0.85rem;
+                padding: 8px 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .admin-section {
+                padding: 15px;
+            }
+            
+            .admin-subsection {
+                padding: 12px;
+            }
+            
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            
+            .admin-section h2 {
+                font-size: 1.5rem;
+            }
+            
+            .admin-subsection h3 {
+                font-size: 1.1rem;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-text">Админ-панель</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/">Главная</a></li>
+                <li><a href="/admin/logout">Выйти</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="admin-panel">
+        <!-- Секция управления новостями -->
+        <div class="admin-section">
+            <h2>Управление новостями</h2>
+            
+            <div class="form-row">
+                <!-- Подсекция добавления новости -->
+                <div class="admin-subsection">
+                    <h3>Добавить новость</h3>
+                    <div class="compact-form">
+                        <form action="{{ url_for('add_news') }}" method="POST" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <input type="text" name="title" placeholder="Заголовок" required>
+                            </div>
+                            <div class="form-group">
+                                <textarea name="content" placeholder="Текст новости" rows="4" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="imageInput">Основное изображение</label>
+                                <input type="file" name="image" id="imageInput" accept="image/*" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="additionalImages">Дополнительные изображения</label>
+                                <input type="file" name="additional_images" id="additionalImages" multiple accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label for="sectionSelect">Раздел</label>
+                                <select name="section" id="sectionSelect" required>
+                                    <option value="restored">Отреставрированные</option>
+                                    <option value="upcoming">Предстоящие</option>
+                                    <option value="latest">Последние новости</option>
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="submit-btn">Добавить</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Подсекция удаления новости -->
+                <div class="admin-subsection">
+                    <h3>Удалить новость</h3>
+                    <div class="compact-form">
+                        <form action="{{ url_for('delete_news') }}" method="POST">
+                            <div class="form-group">
+                                <input type="text" name="title" placeholder="Заголовок новости" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="submit-btn" onclick="return confirm('Удалить новость?')">Удалить</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="admin-section">
+        
+        <!-- Секция управления памятниками -->
+        <div class="admin-section">
+            <h2>Управление памятниками</h2>
+            
+            <div class="form-row">
+                <!-- Подсекция добавления памятника -->
+                <div class="admin-subsection">
+                    <h3>Добавить памятник</h3>
+                    <form id="addMonumentForm" enctype="multipart/form-data">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="monumentTitle">Название</label>
+                                <input type="text" id="monumentTitle" name="title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="monumentCity">Город</label>
+                                <input type="text" id="monumentCity" name="city" value="Ногинск" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="monumentLat">Широта</label>
+                                <input type="number" step="0.000001" id="monumentLat" name="latitude" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="monumentLng">Долгота</label>
+                                <input type="number" step="0.000001" id="monumentLng" name="longitude" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="monumentStatus">Статус</label>
+                                <select id="monumentStatus" name="status">
+                                    <option value="not_evaluated">Не оценено</option>
+                                    <option value="requires_restoration">Требует реставрации</option>
+                                    <option value="restored">Отреставрирован</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="monumentImages">Фотографии (можно выбрать несколько)</label>
+                                <input type="file" id="monumentImages" name="images" multiple accept="image/*">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="monumentDescription">Описание</label>
+                            <textarea id="monumentDescription" name="description" rows="3" required></textarea>
+                        </div>
+                        
+                        <div id="addImagePreview" class="image-preview"></div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="submit-btn" onclick="addMonument()">Добавить памятник</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Подсекция удаления памятника -->
+                <div class="admin-subsection">
+                    <h3>Удалить памятник</h3>
+                    <div class="form-group">
+                        <label for="monumentNameToDelete">Название памятника</label>
+                        <input type="text" id="monumentNameToDelete" placeholder="Введите название">
+                    </div>
+                    <button type="button" class="submit-btn" onclick="searchMonuments()">Найти памятники</button>
+                    
+                    <div id="monuments-list" class="monuments-list hidden">
+                        <h4>Найденные памятники:</h4>
+                        <div id="monuments-results"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Подсекция предложенных памятников -->
+            <div class="admin-subsection">
+                <h3>Предложенные памятники <span id="proposalsCount" class="counter-badge">0</span></h3>
+                <button type="button" class="submit-btn" onclick="loadProposedMonuments()">Загрузить предложения</button>
+                <div id="proposed-monuments" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальные окна (остаются без изменений) -->
+    <div id="approveModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h2>Одобрение памятника</h2>
+            <form id="approveMonumentForm" enctype="multipart/form-data">
+                <input type="hidden" id="proposal_id" name="proposal_id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="approveTitle">Название</label>
+                        <input type="text" id="approveTitle" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="approveCity">Город</label>
+                        <input type="text" id="approveCity" name="city" value="Ногинск" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="approveLat">Широта</label>
+                        <input type="number" step="0.000001" id="approveLat" name="latitude" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="approveLng">Долгота</label>
+                        <input type="number" step="0.000001" id="approveLng" name="longitude" readonly>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="approveDescription">Описание</label>
+                    <textarea id="approveDescription" name="description" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="approveStatus">Статус</label>
+                        <select id="approveStatus" name="status">
+                            <option value="not_evaluated">Не оценено</option>
+                            <option value="requires_restoration">Требует реставрации</option>
+                            <option value="restored">Отреставрирован</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="approveImages">Фотографии (можно выбрать несколько)</label>
+                        <input type="file" id="approveImages" name="images" multiple accept="image/*">
+                    </div>
+                </div>
+                
+                <div id="approveImagePreview" class="image-preview"></div>
+                
+                <div class="form-actions">
+                    <button type="button" class="submit-btn" onclick="submitApproval()">Добавить памятник</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="viewProposalModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeViewModal()">&times;</button>
+            <h2>Предложенный памятник</h2>
+            <div class="proposal-info">
+                <h3 id="viewTitle"></h3>
+                <p><strong>Координаты:</strong> <span id="viewCoords"></span></p>
+                <p><strong>Дата предложения:</strong> <span id="viewDate"></span></p>
+                <p id="viewDescription">Описание отсутствует</p>
+            </div>
+            <div class="form-group">
+                <label for="adminNotes">Заметки администратора</label>
+                <textarea id="adminNotes" placeholder="Добавьте свои заметки..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="submit-btn" onclick="closeViewModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Текущий выбранный предложенный памятник
+        let currentProposalId = null;
+        let currentProposalDetails = null;
+        
+        // Загрузка предложенных памятников
+        async function loadProposedMonuments() {
+            try {
+                const response = await fetch('/api/proposed-monuments');
+                const monuments = await response.json();
+                
+                // Обновляем счетчик
+                document.getElementById('proposalsCount').textContent = monuments.length;
+                
+                const container = document.getElementById('proposed-monuments');
+                container.innerHTML = '';
+                
+                if (monuments.length === 0) {
+                    container.innerHTML = '<p>Нет предложенных памятников</p>';
+                    return;
+                }
+                
+                monuments.forEach((monument, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'proposal-card';
+                    
+                    card.innerHTML = `
+                        <h4>${monument.title}</h4>
+                        <p><strong>Координаты:</strong> ${monument.latitude}, ${monument.longitude}</p>
+                        <div class="actions">
+                            <button class="view-btn" onclick="viewProposalDetails(${monument.id})">Просмотр</button>
+                            <button class="approve-btn" onclick="approveMonument(${monument.id})">Одобрить</button>
+                            <button class="reject-btn" onclick="rejectMonument(${monument.id})">Отклонить</button>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                    
+                    // Анимация появления карточки
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                        card.style.transition = 'opacity 0.5s, transform 0.5s';
+                    }, index * 100);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки предложенных памятников:', error);
+                document.getElementById('proposed-monuments').innerHTML = '<p>Ошибка загрузки данных</p>';
+            }
+        }
+        
+        // Просмотр деталей предложенного памятника
+        async function viewProposalDetails(id) {
+            try {
+                const response = await fetch(`/api/proposed-monuments/${id}`);
+                const proposal = await response.json();
+                
+                document.getElementById('viewTitle').textContent = proposal.title;
+                document.getElementById('viewCoords').textContent = `${proposal.latitude}, ${proposal.longitude}`;
+                document.getElementById('viewDate').textContent = new Date().toLocaleDateString();
+                
+                if (proposal.description) {
+                    document.getElementById('viewDescription').textContent = proposal.description;
+                } else {
+                    document.getElementById('viewDescription').textContent = 'Описание отсутствует';
+                }
+                
+                document.getElementById('viewProposalModal').style.display = 'flex';
+                currentProposalDetails = proposal;
+            } catch (error) {
+                console.error('Ошибка при получении данных предложения:', error);
+                alert('Не удалось загрузить данные памятника');
+            }
+        }
+        
+        // Закрыть модальное окно просмотра
+        function closeViewModal() {
+            document.getElementById('viewProposalModal').style.display = 'none';
+        }
+        
+        // Открыть модальное окно с данными предложенного памятника для одобрения
+        async function approveMonument(proposalId) {
+            currentProposalId = proposalId;
+            try {
+                const response = await fetch(`/api/proposed-monuments/${proposalId}`);
+                const proposal = await response.json();
+                
+                // Заполняем форму
+                document.getElementById('proposal_id').value = proposalId;
+                document.getElementById('approveTitle').value = proposal.title;
+                document.getElementById('approveLat').value = proposal.latitude;
+                document.getElementById('approveLng').value = proposal.longitude;
+                document.getElementById('approveDescription').value = proposal.description || '';
+                document.getElementById('approveStatus').value = 'not_evaluated';
+                document.getElementById('approveImagePreview').innerHTML = '';
+                
+                // Показываем модальное окно
+                document.getElementById('approveModal').style.display = 'flex';
+            } catch (error) {
+                console.error('Ошибка при получении данных предложения:', error);
+                alert('Не удалось загрузить данные памятника');
+            }
+        }
+        
+        // Закрыть модальное окно одобрения
+        function closeModal() {
+            document.getElementById('approveModal').style.display = 'none';
+            document.getElementById('approveImagePreview').innerHTML = '';
+        }
+        
+        // Предпросмотр изображений для модального окна
+        document.getElementById('approveImages').addEventListener('change', function(e) {
+            const preview = document.getElementById('approveImagePreview');
+            preview.innerHTML = '';
+            
+            for (const file of e.target.files) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Предпросмотр изображений для формы добавления
+        document.getElementById('monumentImages').addEventListener('change', function(e) {
+            const preview = document.getElementById('addImagePreview');
+            preview.innerHTML = '';
+            
+            for (const file of e.target.files) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Отправить форму одобрения
+        async function submitApproval() {
+            const form = document.getElementById('approveMonumentForm');
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/api/approve-monument', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    alert('Памятник успешно добавлен!');
+                    closeModal();
+                    // Перезагружаем список предложенных
+                    loadProposedMonuments();
+                } else {
+                    const error = await response.json();
+                    alert(`Ошибка: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Ошибка при добавлении памятника:', error);
+                alert('Произошла ошибка при отправке данных');
+            }
+        }
+        
+        // Добавление памятника администратором
+        async function addMonument() {
+            const form = document.getElementById('addMonumentForm');
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/api/monuments', {
+                    method: 'POST',
+                    body: formData
+                });
+            
+                if (response.ok) {
+                    alert('Памятник успешно добавлен!');
+                    form.reset();
+                    document.getElementById('addImagePreview').innerHTML = '';
+                } else {
+                    const error = await response.json();
+                    alert(`Ошибка: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Ошибка добавления памятника:', error);
+                alert('Произошла ошибка при отправке данных');
+            }
+        }
+        
+        // Отклонение памятника
+        async function rejectMonument(id) {
+            if (confirm('Вы уверены, что хотите отклонить этот памятник?')) {
+                try {
+                    const response = await fetch(`/api/proposed-monuments/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        alert('Памятник отклонен');
+                        loadProposedMonuments();
+                    } else {
+                        const error = await response.json();
+                        alert(`Ошибка: ${error.error}`);
+                    }
+                } catch (error) {
+                    console.error('Ошибка при отклонении памятника:', error);
+                    alert('Произошла ошибка при отклонении памятника');
+                }
+            }
+        }
+        
+        // Поиск памятников для удаления
+        async function searchMonuments() {
+            const name = document.getElementById('monumentNameToDelete').value.trim();
+            if (!name) {
+                alert('Введите название памятника');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/monuments?city=Ногинск&name=${encodeURIComponent(name)}`);
+                const monuments = await response.json();
+                
+                const resultsContainer = document.getElementById('monuments-results');
+                resultsContainer.innerHTML = '';
+                
+                if (monuments.length === 0) {
+                    resultsContainer.innerHTML = '<p>Памятники с таким названием не найдены</p>';
+                    document.getElementById('monuments-list').classList.remove('hidden');
+                    return;
+                }
+                
+                monuments.forEach(monument => {
+                    const item = document.createElement('div');
+                    item.className = 'monument-item';
+                    item.innerHTML = `
+                        <h4>${monument.title}</h4>
+                        <div class="monument-info">
+                            <div>
+                                <p>ID: ${monument.id}</p>
+                                <p>Статус: ${monument.status}</p>
+                            </div>
+                            <div>
+                                <p>Координаты: ${monument.latitude}, ${monument.longitude}</p>
+                            </div>
+                        </div>
+                        <div class="monument-actions">
+                            <button class="delete-btn" onclick="deleteMonument(${monument.id})">Удалить</button>
+                        </div>
+                    `;
+                    resultsContainer.appendChild(item);
+                });
+                
+                document.getElementById('monuments-list').classList.remove('hidden');
+            } catch (error) {
+                console.error('Ошибка поиска памятников:', error);
+                alert('Произошла ошибка при поиске памятников');
+            }
+        }
+        
+        // Удаление памятника по ID
+        async function deleteMonument(id) {
+            if (!confirm(`Вы уверены, что хотите удалить памятник с ID ${id}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/monuments/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('Памятник успешно удален');
+                    // Обновляем список
+                    searchMonuments();
+                } else {
+                    const error = await response.json();
+                    alert(`Ошибка: ${error.message || 'Неизвестная ошибка'}`);
+                }
+            } catch (error) {
+                console.error('Ошибка удаления памятника:', error);
+                alert('Произошла ошибка при удалении памятника');
+            }
+        }
+        
+        // Загрузка при открытии панели
+        window.addEventListener('load', () => {
+            // Анимация для секций
+            const sections = document.querySelectorAll('.admin-section');
+            sections.forEach(section => {
+                section.style.opacity = '1';
+                section.style.transform = 'translateY(0)';
+            });
+            
+            // Загрузка счетчика предложений
+            fetch('/api/proposed-monuments')
+                .then(res => res.json())
+                .then(monuments => {
+                    document.getElementById('proposalsCount').textContent = monuments.length;
+                });
+        });
+    </script>
+</body>
+</html>

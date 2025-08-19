@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Админ вход</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+        
+        .admin-login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--sandstone) 0%, #e6d9b8 100%);
+            padding: 20px;
+            animation: fadeIn 0.8s var(--transition-smooth);
+        }
+        
+        .admin-login-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 
+                0 15px 35px rgba(62, 58, 53, 0.15),
+                0 5px 15px rgba(0, 0, 0, 0.07);
+            transform: translateY(0);
+            transition: transform 0.6s var(--transition-smooth);
+            animation: float 4s var(--transition-smooth) infinite;
+        }
+        
+        .admin-login-form:hover {
+            animation-play-state: paused;
+            transform: translateY(-5px);
+        }
+        
+        .admin-login-form h2 {
+            color: var(--aged-charcoal);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .admin-login-form h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--gilded-gold);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 20px;
+            border: 1px solid rgba(62, 58, 53, 0.15);
+            border-radius: 10px;
+            background: rgba(215, 201, 170, 0.08);
+            transition: all 0.3s var(--transition-smooth);
+            font-size: 16px;
+            color: var(--aged-charcoal);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .form-group input:focus {
+            border-color: var(--gilded-gold);
+            box-shadow: 0 0 0 3px rgba(198, 168, 106, 0.2);
+            outline: none;
+            background: white;
+        }
+        
+        .submit-btn {
+            background: var(--terracotta);
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.4s var(--transition-smooth);
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px rgba(160, 88, 60, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .submit-btn:hover {
+            background: #8c4a32;
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(160, 88, 60, 0.3);
+        }
+        
+        .submit-btn:active::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 1;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+        
+        .decoration-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: hidden;
+            border-radius: 16px;
+            z-index: -1;
+        }
+        
+        .decoration-elements::before,
+        .decoration-elements::after {
+            content: '';
+            position: absolute;
+            background: rgba(90, 125, 107, 0.05);
+            border-radius: 50%;
+            animation: float 6s var(--transition-smooth) infinite;
+        }
+        
+        .decoration-elements::before {
+            width: 120px;
+            height: 120px;
+            top: -40px;
+            right: -40px;
+            animation-delay: 0.5s;
+        }
+        
+        .decoration-elements::after {
+            width: 80px;
+            height: 80px;
+            bottom: -30px;
+            left: -30px;
+            animation-delay: 1s;
+        }
+        
+        .error-message {
+            background: rgba(160, 88, 60, 0.1);
+            color: var(--terracotta);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
+        }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-login-container">
+        <div class="admin-login-form">
+            <div class="decoration-elements"></div>
+            <h2>Вход для администратора</h2>
+            {% if error %}
+                <p class="error-message">{{ error }}</p>
+            {% endif %}
+            <form method="POST">
+                <div class="form-group">
+                    <input type="text" name="username" placeholder="Логин" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" placeholder="Пароль" required>
+                </div>
+                <button type="submit" class="submit-btn">Войти</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Планируемые проекты - ЧистоеНаследие</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
+<style>
+        :root {
+            --terracotta: #9C6644;
+            --ochre: #D9A679;
+            --slate-blue: #7D8CA3;
+            --light-beige: #F2E9E4;
+            --dark-gray: #333333;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            color: var(--dark-gray);
+            background-color: var(--light-beige);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            /* НОВЫЙ ФОН КАК В INDEX.HTML */
+            background: 
+                linear-gradient(rgba(156, 102, 68, 0.3), rgba(156, 102, 68, 0.3));
+            min-height: 100vh;
+        }
+
+        /* НОВЫЙ КОНТЕЙНЕР ДЛЯ КОНТЕНТА */
+        .main-content-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+            margin: 30px auto;
+            max-width: 1300px;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Остальные стили без изменений */
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: var(--terracotta);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #8a5538;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            font-family: 'Playfair Display', serif;
+            color: var(--terracotta);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--terracotta);
+        }
+
+        .news-grid-full {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border-top: 4px solid var(--terracotta);
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .news-card h3 {
+            margin-top: 0;
+            color: var(--terracotta);
+            font-size: 1.3rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .preview-text {
+            color: var(--dark-gray);
+        }
+
+        .image-container {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .news-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .news-card:hover .news-image {
+            transform: scale(1.05);
+        }
+
+        /* Стили для модального окна новостей */
+        .news-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .news-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-news-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2.5rem;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-news-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 28px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--terracotta);
+            transition: all 0.3s;
+        }
+        
+        .modal-news-close:hover {
+            transform: rotate(90deg);
+            color: #8a5538;
+        }
+        
+        .modal-news-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+            background: #f8f8f8;
+            padding: 5px;
+        }
+        
+        .gallery-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        
+        .gallery-item {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .gallery-item:hover, .gallery-item.active {
+            border-color: var(--terracotta);
+            transform: scale(1.05);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Навигация по галерее */
+        .gallery-nav {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+            gap: 10px;
+        }
+        
+        .gallery-nav-btn {
+            background: var(--terracotta);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .gallery-nav-btn:hover {
+            background: #8a5538;
+            transform: scale(1.1);
+        }
+        
+        /* Фуллскрин просмотр */
+        .fullscreen-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            cursor: pointer;
+        }
+        
+        .fullscreen-image {
+            max-width: 90%;
+            max-height: 85vh;
+            object-fit: contain;
+        }
+        
+        .fullscreen-caption {
+            color: white;
+            margin-top: 15px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        @media (max-width: 1200px) {
+            .news-grid-full {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .news-grid-full {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .news-grid-full {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .image-container {
+                height: 250px;
+            }
+            
+            .modal-news-content {
+                padding: 1.5rem;
+            }
+            
+            .modal-news-image {
+                max-height: 300px;
+            }
+            
+            .gallery-item {
+                width: 80px;
+                height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content-container">
+        <div class="container">
+            <a href="/" class="back-btn">← На главную</a>
+            <h2 class="section-title">Планируемые проекты</h2>
+            
+            <div class="news-grid-full">
+                {% for item in news %}
+                <div class="news-card" onclick="openNewsModal({{ item.id }})">
+                    <div class="image-container">
+                        <img 
+                            src="{{ url_for('static', filename='images/' + item.image) }}" 
+                            alt="{{ item.title }}" 
+                            class="news-image"
+                        >
+                    </div>
+                    <div class="card-content">
+                        <h3>{{ item.title }}</h3>
+                        <p class="preview-text">{{ item.content|truncate(150) }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для новостей -->
+    <div class="news-modal" id="newsModal">
+        <div class="modal-news-content">
+            <button class="modal-news-close" onclick="closeNewsModal()">×</button>
+            <h2 class="modal-news-title" id="modalNewsTitle"></h2>
+            
+            <div id="mainImageContainer">
+                <img id="modalNewsImage" src="" alt="" class="modal-news-image">
+            </div>
+            
+            <div class="gallery-container" id="newsGallery"></div>
+            
+            <div class="gallery-nav">
+                <button class="gallery-nav-btn" onclick="showPrevImage()">←</button>
+                <button class="gallery-nav-btn" onclick="showNextImage()">→</button>
+            </div>
+            
+            <div class="modal-news-text" id="modalNewsContent"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+    <script>
+        // Глобальные переменные для управления галереей
+        let currentNewsImages = [];
+        let currentMainImageIndex = 0;
+        let newsGalleryItems = [];
+        
+        // Анимация карточек при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.news-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+        
+        // Открытие модального окна с новостью
+        async function openNewsModal(newsId) {
+            try {
+                const response = await fetch(`/api/news/${newsId}`);
+                if (!response.ok) {
+                    throw new Error('Не удалось загрузить новость');
+                }
+                const news = await response.json();
+                
+                document.getElementById('modalNewsTitle').textContent = news.title;
+                document.getElementById('modalNewsContent').innerHTML = news.content;
+                
+                const gallery = document.getElementById('newsGallery');
+                gallery.innerHTML = '';
+                currentNewsImages = [];
+                newsGalleryItems = [];
+                
+                if (news.image_url) {
+                    currentNewsImages.push({
+                        src: news.image_url,
+                        alt: news.title
+                    });
+                    
+                    document.getElementById('modalNewsImage').src = news.image_url;
+                    document.getElementById('modalNewsImage').alt = news.title;
+                }
+                
+                if (news.additional_images && news.additional_images.length > 0) {
+                    news.additional_images.forEach(img => {
+                        currentNewsImages.push({
+                            src: `/static/images/${img}`,
+                            alt: news.title
+                        });
+                    });
+                    
+                    // Создаем элементы галереи
+                    currentNewsImages.forEach((img, index) => {
+                        const galleryItem = document.createElement('div');
+                        galleryItem.className = 'gallery-item';
+                        if (index === 0) galleryItem.classList.add('active');
+                        
+                        const imgElement = document.createElement('img');
+                        imgElement.src = img.src;
+                        imgElement.alt = img.alt;
+                        
+                        galleryItem.appendChild(imgElement);
+                        galleryItem.addEventListener('click', () => showImage(index));
+                        
+                        gallery.appendChild(galleryItem);
+                        newsGalleryItems.push(galleryItem);
+                    });
+                    
+                    // Показываем навигацию
+                    document.querySelector('.gallery-nav').style.display = 'flex';
+                } else {
+                    // Скрываем навигацию, если нет дополнительных изображений
+                    document.querySelector('.gallery-nav').style.display = 'none';
+                }
+                
+                document.getElementById('newsModal').classList.add('active');
+                
+                // Инициализация MagnificPopup для основного изображения
+                $('#modalNewsImage').magnificPopup({
+                    type: 'image',
+                    closeOnContentClick: true,
+                    mainClass: 'mfp-img-mobile',
+                    image: {
+                        verticalFit: true
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Ошибка загрузки новости:', error);
+                alert('Не удалось загрузить новость');
+            }
+        }
+        
+        // Закрытие модального окна
+        function closeNewsModal() {
+            document.getElementById('newsModal').classList.remove('active');
+            currentNewsImages = [];
+            currentMainImageIndex = 0;
+            newsGalleryItems = [];
+        }
+        
+        // Показать изображение по индексу
+        function showImage(index) {
+            if (index < 0 || index >= currentNewsImages.length) return;
+            
+            currentMainImageIndex = index;
+            const img = currentNewsImages[index];
+            
+            document.getElementById('modalNewsImage').src = img.src;
+            document.getElementById('modalNewsImage').alt = img.alt;
+            
+            newsGalleryItems.forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Показать предыдущее изображение
+        function showPrevImage() {
+            const newIndex = (currentMainImageIndex - 1 + currentNewsImages.length) % currentNewsImages.length;
+            showImage(newIndex);
+        }
+        
+        // Показать следующее изображение
+        function showNextImage() {
+            const newIndex = (currentMainImageIndex + 1) % currentNewsImages.length;
+            showImage(newIndex);
+        }
+        
+        // Показать изображение в полноэкранном режиме
+        function showFullscreenImage(src, alt) {
+            const viewer = document.createElement('div');
+            viewer.className = 'fullscreen-viewer';
+            viewer.innerHTML = `
+                <img src="${src}" alt="${alt}" class="fullscreen-image">
+                <div class="fullscreen-caption">${alt}</div>
+            `;
+            
+            viewer.addEventListener('click', () => {
+                document.body.removeChild(viewer);
+            });
+            
+            document.body.appendChild(viewer);
+        }
+    </script>
+</body>
+</html>
