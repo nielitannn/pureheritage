@@ -910,17 +910,8 @@ def initiate_destruction():
     except:
         pass
 
-if __name__ == '__main__':
-    # Инициализация пула соединений
-    init_db_pool()
-    
-    # Инициализация таблиц БД
-    init_db()
-    
-    # Запуск приложения
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run()
 else:
-    # Для среды PythonAnywhere
-    if 'PYTHONANYWHERE_DOMAIN' in os.environ or 'PYTHONANYWHERE_SITE' in os.environ:
-        init_db_pool()
-        init_db()
+    from vercel_python import wsgi_handler
+    handler = wsgi_handler(app)
